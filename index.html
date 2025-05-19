@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+    <div>
         <h1 class="cedarville-cursive">Flora</h1>
         <p class="subtitle">A beautiful way to identify and learn about flowers</p>
 
@@ -28,22 +28,28 @@
             <div id="identifyTab" class="tab-content active">
                 <div class="flower-identification-section">
                     <h2>Identify a Flower</h2>
-                    <div class="capture-options">
-                        <button id="takePictureButton" class="option-button"><i class="fas fa-camera"></i></button>
-                        <button id="uploadButton" class="option-button"><i class="fas fa-upload"></i></button>
-                        <input type="file" id="flowerImageInput" accept="image/*" capture="environment" style="display:none">
+                    <div class="image-capture-container">
+                        <div class="image-preview-wrapper">
+                            <div class="empty-state" id="emptyImageState">
+                                <i class="fas fa-seedling fa-3x"></i>
+                                <p>No image selected</p>
+                            </div>
+                            <img id="imagePreview" src="#" alt="Image Preview" style="display:none;">
+                            <button id="removeImageButton" style="display:none;"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="capture-options">
+                            <button id="takePictureButton" class="option-button"><i class="fas fa-camera"></i> Take Photo</button>
+                            <button id="uploadButton" class="option-button"><i class="fas fa-upload"></i> Upload</button>
+                            <input type="file" id="flowerImageInput" accept="image/*" capture="environment" style="display:none">
+                        </div>
+                        <button id="identifyFlowerButton">Identify Flower</button>
                     </div>
                     <div class="camera-container" style="display:none">
                         <video id="cameraPreview" autoplay playsinline style="display:none"></video>
-                        <div style="display: flex; gap: 10px;">
-                            <button id="capturePictureButton"><i class="fas fa-camera"></i></button>
-                            <button id="cancelCameraButton"><i class="fas fa-times"></i></button>
+                        <div class="camera-controls">
+                            <button id="capturePictureButton" class="capture-btn"><i class="fas fa-camera"></i></button>
+                            <button id="cancelCameraButton" class="cancel-btn"><i class="fas fa-times"></i></button>
                         </div>
-                    </div>
-                    <button id="identifyFlowerButton">Identify Flower</button>
-                    <div class="image-preview-container">
-                        <img id="imagePreview" src="#" alt="Image Preview" style="display:none; max-width: 300px; margin-top: 10px;">
-                        <button id="removeImageButton" style="display:none;">Remove Image</button>
                     </div>
                     <div id="identificationResult" class="result-box">
                         <p>Identification results will appear here...</p>
@@ -89,7 +95,7 @@
                     <!-- Chat messages will appear here -->
                 </div>
                 <div class="chat-input-container">
-                    <input type="text" id="chatInput" placeholder="Ask Flora something...">
+                    <input type="text" id="chatInput" placeholder="Ask Flora something..." style="margin-top: 0px;">
                     <button id="sendMessageButton">Send</button>
                 </div>
             </div>

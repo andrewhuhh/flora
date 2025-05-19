@@ -20,6 +20,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelCameraButton = document.getElementById('cancelCameraButton');
     const chatToggleButton = document.getElementById('chatToggleButton');
     const floatingChat = document.getElementById('floatingChat');
+    const emptyImageState = document.getElementById('emptyImageState');
+    
+    // Hide identify button by default
+    identifyFlowerButton.style.display = 'none';
+    
+    // Hide result box by default
+    identificationResult.style.display = 'none';
     
     // Camera stream reference
     let mediaStream = null;
@@ -59,6 +66,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const sortBy = document.getElementById('sortBy');
     let currentSearchTerm = '';
     let currentSortOption = 'date-desc';
+    
+    // Location data storage
+    let currentLocationData = null;
+
+    // Function to get geolocation data
+    function getCurrentLocation() {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                resolve(null); // Geolocation not supported
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const locationData = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        timestamp: position.timestamp
+                    };
+                    resolve(locationData);
+                },
+                (error) => {
+                    console.warn('Geolocation error:', error);
+                    resolve(null); // Return null on error but don't reject
+                },
+                { 
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+        });
+    }
 
     // Add event listeners for search and sort
     collectionSearch?.addEventListener('input', (e) => {
@@ -116,10 +156,17 @@ document.addEventListener('DOMContentLoaded', () => {
         filteredCollection.forEach((flower, index) => {
             const flowerCard = document.createElement('div');
             flowerCard.className = 'flower-card';
+            
+            // Show location indicator if available
+            const locationIndicator = flower.location ? '<i class="fas fa-map-marker-alt location-icon" title="Location data available"></i>' : '';
+            
+            // Show notes indicator if there are notes
+            const notesIndicator = flower.notes && flower.notes.trim() !== '' ? '<i class="fas fa-sticky-note notes-icon" title="Notes available"></i>' : '';
+            
             flowerCard.innerHTML = `
                 <img src="${flower.imageDataUrl}" alt="${flower.name || 'Unknown flower'}" class="flower-thumbnail">
                 <div class="flower-info">
-                    <h3>${flower.name || 'Unknown flower'}</h3>
+                    <h3>${flower.name || 'Unknown flower'} ${locationIndicator} ${notesIndicator}</h3>
                     <div class="species-name">${flower.details.species || ''}</div>
                     <p>${flower.date}</p>
                     <button class="view-details-button" data-index="${index}">View Details</button>
@@ -132,14 +179,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add event listeners for view and delete buttons
         document.querySelectorAll('.view-details-button').forEach(button => {
             button.addEventListener('click', (event) => {
-                const index = event.target.getAttribute('data-index');
-                showFlowerDetails(flowerCollection[index]);
+                const index = parseInt(event.target.getAttribute('data-index'));
+                showFlowerFocusedView(index);
             });
         });
 
         document.querySelectorAll('.delete-button').forEach(button => {
             button.addEventListener('click', (event) => {
-                const index = event.target.getAttribute('data-index');
+                const index = parseInt(event.target.getAttribute('data-index'));
                 flowerCollection.splice(index, 1);
                 localStorage.setItem('flowerCollection', JSON.stringify(flowerCollection));
                 displayFlowerCollection();
@@ -147,26 +194,164 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function showFlowerDetails(flower) {
-        const detailsModal = document.createElement('div');
-        detailsModal.className = 'modal';
-        detailsModal.innerHTML = `
-            <div class="modal-content">
+    function showFlowerFocusedView(flowerIndex) {
+        const flower = flowerCollection[flowerIndex];
+        
+        // Create a modal for the focused view
+        const focusedModal = document.createElement('div');
+        focusedModal.className = 'modal flower-focused-modal';
+        
+        // Format location string if available
+        let locationStr = 'Location data not available';
+        if (flower.location) {
+            locationStr = `Latitude: ${flower.location.latitude.toFixed(6)}, Longitude: ${flower.location.longitude.toFixed(6)}`;
+        }
+        
+        focusedModal.innerHTML = `
+            <div class="modal-content focused-view">
                 <span class="close-modal">&times;</span>
-                <h2>${flower.name || 'Unknown flower'}</h2>
-                <div class="species-name">${flower.details.species || ''}</div>
-                <img src="${flower.imageDataUrl}" alt="${flower.name || 'Unknown flower'}" class="flower-image">
-                <div class="flower-details">
-                    <pre>${JSON.stringify(flower.details, null, 2)}</pre>
+                
+                <div class="focused-header">
+                    <h2>${flower.name || 'Unknown flower'}</h2>
+                    <div class="species-name">${flower.details.species || ''}</div>
+                </div>
+                
+                <div class="focused-content">
+                    <div class="focused-image-container">
+                        <img src="${flower.imageDataUrl}" alt="${flower.name || 'Unknown flower'}" class="focused-flower-image">
+                    </div>
+                    
+                    <div class="focused-details">
+                        <div class="detail-section">
+                            <h3>Information</h3>
+                            <p><strong>Date Added:</strong> ${flower.date}</p>
+                            <p><strong>Location:</strong> ${locationStr}</p>
+                            ${flower.location ? 
+                                `<button id="viewOnMap" class="map-button">View on Map</button>` : ''}
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h3>Care Information</h3>
+                            <p>${flower.details.care || 'No care information available'}</p>
+                            <ul>
+                                <li><strong>Light:</strong> ${flower.details.light || 'Not specified'}</li>
+                                <li><strong>Water:</strong> ${flower.details.water || 'Not specified'}</li>
+                                <li><strong>Soil:</strong> ${flower.details.soil || 'Not specified'}</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h3>My Notes</h3>
+                            <textarea id="flowerNotes" class="flower-notes" placeholder="Add your notes about this flower...">${flower.notes || ''}</textarea>
+                            <button id="saveNotes" class="save-notes-button">Save Notes</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="focused-chat-section">
+                    <h3>Chat with Flora about this flower</h3>
+                    <div id="focusedChatBox" class="focused-chat-box">
+                        <!-- Chat messages will appear here -->
+                    </div>
+                    <div class="focused-chat-input">
+                        <input type="text" id="focusedChatInput" placeholder="Ask Flora about this flower...">
+                        <button id="focusedSendButton">Send</button>
+                    </div>
                 </div>
             </div>
         `;
-        document.body.appendChild(detailsModal);
-
-        detailsModal.style.display = 'block';
-        detailsModal.querySelector('.close-modal').addEventListener('click', () => {
-            detailsModal.style.display = 'none';
-            detailsModal.remove();
+        
+        document.body.appendChild(focusedModal);
+        focusedModal.style.display = 'block';
+        
+        // Close the modal
+        focusedModal.querySelector('.close-modal').addEventListener('click', () => {
+            focusedModal.style.display = 'none';
+            focusedModal.remove();
+        });
+        
+        // Handle saving notes
+        const saveNotesButton = document.getElementById('saveNotes');
+        saveNotesButton.addEventListener('click', () => {
+            const notesTextarea = document.getElementById('flowerNotes');
+            flower.notes = notesTextarea.value;
+            flowerCollection[flowerIndex] = flower;
+            localStorage.setItem('flowerCollection', JSON.stringify(flowerCollection));
+            
+            // Show saved confirmation
+            saveNotesButton.textContent = 'Saved!';
+            setTimeout(() => {
+                saveNotesButton.textContent = 'Save Notes';
+            }, 2000);
+            
+            // Update the collection display to show notes icon if needed
+            displayFlowerCollection();
+        });
+        
+        // Handle the map button if it exists
+        const mapButton = document.getElementById('viewOnMap');
+        if (mapButton) {
+            mapButton.addEventListener('click', () => {
+                const { latitude, longitude } = flower.location;
+                const mapUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+                window.open(mapUrl, '_blank');
+            });
+        }
+        
+        // Set up focused chat functionality
+        const focusedChatBox = document.getElementById('focusedChatBox');
+        const focusedChatInput = document.getElementById('focusedChatInput');
+        const focusedSendButton = document.getElementById('focusedSendButton');
+        
+        function appendFocusedMessage(text, sender) {
+            const messageElement = document.createElement('p');
+            messageElement.textContent = text;
+            messageElement.classList.add(sender === 'user' ? 'user-message' : 'flora-message');
+            focusedChatBox.appendChild(messageElement);
+            focusedChatBox.scrollTop = focusedChatBox.scrollHeight;
+        }
+        
+        // Add a welcome message from Flora
+        appendFocusedMessage(`Hello! I'd love to chat about this ${flower.name || 'flower'}. What would you like to know?`, 'flora');
+        
+        // Handle sending chat messages
+        focusedSendButton.addEventListener('click', async () => {
+            const message = focusedChatInput.value.trim();
+            if (!message) return;
+            
+            if (!shapesApiKey) {
+                alert('Please save your Shapes API Key first.');
+                settingsModal.style.display = 'block';
+                return;
+            }
+            
+            appendFocusedMessage(message, 'user');
+            focusedChatInput.value = '';
+            
+            try {
+                // Make the API call with context about this specific flower
+                const enrichedMessage = `I'm asking about a ${flower.name || 'flower'} (${flower.details.species || 'unknown species'}). ${message}`;
+                const response = await callShapesApiForChat(enrichedMessage);
+                appendFocusedMessage(response.choices[0].message.content, 'flora');
+            } catch (error) {
+                console.error('Error sending focused chat message:', error);
+                let errorMessage = 'Sorry, I encountered an error processing your message.';
+                
+                if (error.message.includes('API Key Invalid')) {
+                    errorMessage = 'Error: Invalid API Key. Please check your API key in settings.';
+                    setTimeout(() => {
+                        settingsModal.style.display = 'block';
+                    }, 1000);
+                }
+                
+                appendFocusedMessage(errorMessage, 'flora');
+            }
+        });
+        
+        focusedChatInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                focusedSendButton.click();
+            }
         });
     }
 
@@ -190,6 +375,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Camera functionality
     takePictureButton.addEventListener('click', async () => {
+        // Try to get location data when taking a picture
+        try {
+            currentLocationData = await getCurrentLocation();
+            console.log('Location captured for camera:', currentLocationData);
+        } catch (error) {
+            console.warn('Failed to capture location for camera:', error);
+            currentLocationData = null;
+        }
+
         if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
             try {
                 // Hide the image preview if it's showing
@@ -220,6 +414,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Add a helper function to display a location notification
+    function showLocationNotification(hasLocation) {
+        const locationNotification = document.createElement('div');
+        locationNotification.className = 'location-notification';
+        
+        if (hasLocation) {
+            locationNotification.innerHTML = '<i class="fas fa-map-marker-alt"></i> Location data captured';
+            locationNotification.classList.add('success');
+        } else {
+            locationNotification.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Location not available';
+            locationNotification.classList.add('warning');
+        }
+        
+        document.body.appendChild(locationNotification);
+        
+        // Remove after a few seconds
+        setTimeout(() => {
+            locationNotification.classList.add('fade-out');
+            setTimeout(() => {
+                locationNotification.remove();
+            }, 500);
+        }, 3000);
+    }
+
     capturePictureButton.addEventListener('click', () => {
         if (!mediaStream) return;
         
@@ -238,7 +456,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // Display in the preview
         imagePreview.src = imageDataUrl;
         imagePreview.style.display = 'block';
+        emptyImageState.style.display = 'none';
         removeImageButton.style.display = 'block';
+        identifyFlowerButton.style.display = 'block'; // Show identify button when image is captured
+        
+        // Show location notification
+        if (currentLocationData) {
+            showLocationNotification(true);
+        } else {
+            showLocationNotification(false);
+        }
         
         // Stop the camera and hide the camera container
         stopCamera();
@@ -337,10 +564,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // File upload functionality
-    uploadButton.addEventListener('click', () => {
+    uploadButton.addEventListener('click', async () => {
         // Remove the capture attribute to allow gallery selection
         flowerImageInput.removeAttribute('capture');
         flowerImageInput.click();
+        
+        // Try to get location data when uploading
+        try {
+            currentLocationData = await getCurrentLocation();
+            console.log('Location captured for upload:', currentLocationData);
+        } catch (error) {
+            console.warn('Failed to capture location for upload:', error);
+            currentLocationData = null;
+        }
     });
 
     flowerImageInput.addEventListener('change', (event) => {
@@ -350,11 +586,20 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = (e) => {
                 imagePreview.src = e.target.result;
                 imagePreview.style.display = 'block';
+                emptyImageState.style.display = 'none';
                 removeImageButton.style.display = 'block';
+                identifyFlowerButton.style.display = 'block'; // Show identify button when image is loaded
                 // Hide camera container if it's showing
                 cameraContainer.style.display = 'none';
                 if (mediaStream) {
                     stopCamera();
+                }
+                
+                // Show location notification
+                if (currentLocationData) {
+                    showLocationNotification(true);
+                } else {
+                    showLocationNotification(false);
                 }
             };
             reader.readAsDataURL(file);
@@ -374,6 +619,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Show the result box when identification starts
+        identificationResult.style.display = 'block';
         identificationResult.innerHTML = '<p>Identifying, please wait...</p>';
 
         try {
@@ -387,15 +634,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     imageDataUrl: imageDataUrl,
                     name: result.name || 'Unknown flower',
                     details: result,
-                    date: new Date().toLocaleString()
+                    date: new Date().toLocaleString(),
+                    location: currentLocationData, // Add location data
+                    notes: '' // Add empty notes field
                 };
                 
                 flowerCollection.push(flowerData);
                 localStorage.setItem('flowerCollection', JSON.stringify(flowerCollection));
                 displayFlowerCollection();
                 
-                // Switch to collection tab to show the newly added flower
-                document.querySelector('.tab-item[data-tab="collectionTab"]').click();
+                // Reset location data after saving
+                currentLocationData = null;
                 
                 // Get Flora's comment on the identified flower
                 try {
@@ -711,13 +960,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear the image preview
         imagePreview.src = '#';
         imagePreview.style.display = 'none';
+        emptyImageState.style.display = 'flex';
         removeImageButton.style.display = 'none';
+        identifyFlowerButton.style.display = 'none'; // Hide identify button when image is removed
         
         // Reset the file input
         flowerImageInput.value = '';
         
-        // Reset the identification result
+        // Hide and reset the identification result
+        identificationResult.style.display = 'none';
         identificationResult.innerHTML = '<p>Identification results will appear here...</p>';
+        
+        // Reset the location data
+        currentLocationData = null;
     });
     
     // Initialize the collection display

@@ -54,6 +54,8 @@ h2 {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    max-height: 800px;
+    overflow-y: auto;
 }
 
 label {
@@ -65,6 +67,7 @@ label {
 input[type="text"], input[type="password"], input[type="file"] {
     width: calc(100% - 22px);
     padding: 10px;
+    margin-top: 10px;
     margin-bottom: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -165,8 +168,8 @@ button:hover {
 
 /* Flower Collection Styles */
 .flower-collection-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 15px;
     margin-top: 15px;
 }
@@ -178,6 +181,7 @@ button:hover {
     background-color: #fff;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     transition: transform 0.2s;
+    width: 200px;
 }
 
 .flower-card:hover {
@@ -197,6 +201,22 @@ button:hover {
     font-size: 1rem;
     color: #333;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.location-icon, .notes-icon {
+    font-size: 0.9rem;
+    margin-left: 3px;
+}
+
+.location-icon {
+    color: #dc3545;
+}
+
+.notes-icon {
+    color: #ffc107;
 }
 
 .flower-info p {
@@ -282,6 +302,10 @@ button:hover {
     .modal-content {
         margin: 5% auto;
         width: 90%;
+    }
+
+    .flower-card {
+        width: 100%;
     }
 }
 
@@ -418,7 +442,6 @@ button:hover {
 .identification-success, .identification-error, .identification-warning {
     padding: 15px;
     border-radius: 5px;
-    margin-top: 10px;
 }
 
 .identification-success {
@@ -557,6 +580,7 @@ button:disabled:hover {
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     align-self: flex-end;
     transition: transform 0.3s ease;
+    margin-bottom: 5px;
 }
 
 .chat-toggle-button:hover {
@@ -678,8 +702,7 @@ button:disabled:hover {
 }
 
 .search-box {
-    flex: 1;
-    min-width: 200px;
+    display: flex;
 }
 
 .search-box input {
@@ -688,6 +711,7 @@ button:disabled:hover {
     border: 1px solid #ddd;
     border-radius: 4px;
     font-family: "DM Sans", sans-serif;
+    height: 100%;
 }
 
 .sort-controls {
@@ -715,4 +739,347 @@ button:disabled:hover {
     padding: 20px;
     color: #666;
     font-style: italic;
+}
+
+/* Focused Flower View Styles */
+.flower-focused-modal .modal-content {
+    max-width: 800px;
+    padding: 25px;
+}
+
+.focused-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.focused-content {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.focused-image-container {
+    flex: 1;
+    max-width: 50%;
+}
+
+.focused-flower-image {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.focused-details {
+    flex: 1;
+}
+
+.detail-section {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-section:last-child {
+    border-bottom: none;
+}
+
+.detail-section h3 {
+    color: #5cb85c;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.flower-notes {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    font-family: "DM Sans", sans-serif;
+    resize: vertical;
+}
+
+.save-notes-button {
+    background-color: #5cb85c;
+}
+
+.save-notes-button:hover {
+    background-color: #4cae4c;
+}
+
+.map-button {
+    background-color: #17a2b8;
+    margin-top: 10px;
+}
+
+.map-button:hover {
+    background-color: #138496;
+}
+
+/* Focused Chat Section */
+.focused-chat-section {
+    margin-top: 20px;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+.focused-chat-box {
+    height: 200px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+.focused-chat-box p {
+    margin: 5px 0;
+}
+
+.focused-chat-box .user-message {
+    text-align: right;
+    color: #007bff;
+    font-weight: 500;
+}
+
+.focused-chat-box .flora-message {
+    text-align: left;
+    color: #28a745;
+}
+
+.focused-chat-input {
+    display: flex;
+}
+
+.focused-chat-input input[type="text"] {
+    flex-grow: 1;
+    margin-right: 10px;
+    margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+    .focused-content {
+        flex-direction: column;
+    }
+    
+    .focused-image-container {
+        max-width: 100%;
+        margin-bottom: 20px;
+    }
+}
+
+/* Location Notification */
+.location-notification {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    padding: 12px 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 9999;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slide-in 0.3s ease-out;
+    transition: opacity 0.5s ease;
+}
+
+.location-notification.success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.location-notification.warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+}
+
+.location-notification.fade-out {
+    opacity: 0;
+}
+
+@keyframes slide-in {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Image Capture Container */
+.image-capture-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.image-preview-wrapper {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    border-radius: 12px;
+    border: 2px dashed #ccc;
+    margin-bottom: 20px;
+    overflow: hidden;
+    background-color: #f9f9f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #999;
+}
+
+.empty-state i {
+    margin-bottom: 10px;
+    color: #ccc;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 16px;
+}
+
+#imagePreview {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+    display: none;
+}
+
+#removeImageButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(220, 53, 69, 0.8);
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    z-index: 10;
+}
+
+#removeImageButton:hover {
+    background-color: rgba(220, 53, 69, 1);
+}
+
+.capture-options {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.option-button {
+    flex: 1;
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.option-button i {
+    font-size: 1.2em;
+}
+
+#identifyFlowerButton {
+    width: 100%;
+    padding: 12px 15px;
+    font-weight: 600;
+    font-size: 1.1em;
+    border-radius: 8px;
+    background-color: #5cb85c;
+    transition: all 0.2s ease;
+}
+
+#identifyFlowerButton:hover {
+    background-color: #4cae4c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Camera Container */
+.camera-container {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+#cameraPreview {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    background-color: #333;
+}
+
+.camera-controls {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 15px;
+    background-color: rgba(0,0,0,0.7);
+    width: 100%;
+}
+
+.capture-btn, .cancel-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+    transition: all 0.2s ease;
+}
+
+.capture-btn {
+    background-color: #5cb85c;
+}
+
+.capture-btn:hover {
+    background-color: #4cae4c;
+    transform: scale(1.05);
+}
+
+.cancel-btn {
+    background-color: #dc3545;
+}
+
+.cancel-btn:hover {
+    background-color: #c82333;
+    transform: scale(1.05);
 } 
