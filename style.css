@@ -1,0 +1,472 @@
+/* Font classes */
+.dm-sans {
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+.cedarville-cursive {
+  font-family: "Cedarville Cursive", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+
+body {
+    font-family: "DM Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+    color: #5cb85c;
+    font-family: "Cedarville Cursive", cursive;
+    font-weight: 400;
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+h2 {
+    color: #5cb85c;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 600;
+}
+
+.api-key-section, .flower-identification-section, .chat-section, .flower-collection-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+input[type="text"], input[type="password"], input[type="file"] {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: "DM Sans", sans-serif;
+}
+
+button {
+    background-color: #5cb85c;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 500;
+}
+
+button:hover {
+    background-color: #4cae4c;
+}
+
+.result-box {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #e9e9e9;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    min-height: 50px;
+    overflow-wrap: break-word;
+}
+
+.chat-box {
+    height: 200px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+.chat-box p {
+    margin: 5px 0;
+}
+
+.chat-box .user-message {
+    text-align: right;
+    color: #007bff;
+    font-weight: 500;
+}
+
+.chat-box .flora-message {
+    text-align: left;
+    color: #28a745;
+}
+
+.chat-input-container {
+    display: flex;
+}
+
+.chat-input-container input[type="text"] {
+    flex-grow: 1;
+    margin-right: 10px;
+    margin-bottom: 0;
+}
+
+#imagePreview {
+    display: none;
+    max-width: 100%;
+    max-height: 300px;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.image-preview-container {
+    margin-top: 15px;
+    position: relative;
+}
+
+#removeImageButton {
+    background-color: #dc3545;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-top: 10px;
+    display: block;
+}
+
+#removeImageButton:hover {
+    background-color: #c82333;
+}
+
+/* Flower Collection Styles */
+.flower-collection-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.flower-card {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.flower-card:hover {
+    transform: translateY(-5px);
+}
+
+.flower-thumbnail {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.flower-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 1rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.flower-info p {
+    margin: 0 0 10px 0;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.view-details-button, .delete-button {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    margin-right: 5px;
+}
+
+.delete-button {
+    background-color: #dc3545;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 600px;
+    max-height: 80%;
+    overflow-y: auto;
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.flower-image {
+    max-width: 100%;
+    max-height: 300px;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
+.flower-details {
+    margin-top: 15px;
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.flower-details pre {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    font-family: "DM Sans", sans-serif;
+    font-size: 0.9rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+    .flower-collection-container {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+    
+    .modal-content {
+        margin: 5% auto;
+        width: 90%;
+    }
+}
+
+.typing-indicator {
+    color: #999;
+    font-style: italic;
+}
+
+/* Tabs System */
+.tabs-container {
+    margin-bottom: 20px;
+}
+
+.tabs {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 -1px 0;
+    overflow-x: auto;
+}
+
+.tab-item {
+    padding: 10px 20px;
+    background-color: #f4f4f4;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    margin-right: 5px;
+    border-radius: 5px 5px 0 0;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.tab-item:hover {
+    background-color: #e9e9e9;
+}
+
+.tab-item.active {
+    background-color: #fff;
+    border-bottom: 1px solid #fff;
+    position: relative;
+    z-index: 1;
+    font-weight: 600;
+}
+
+.tab-content {
+    display: none;
+    border: 1px solid #ddd;
+    padding: 15px;
+    background-color: #fff;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Header actions */
+.header-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+}
+
+.settings-button {
+    background-color: #6c757d;
+    padding: 5px 10px;
+    font-size: 0.9em;
+}
+
+.settings-button:hover {
+    background-color: #5a6268;
+}
+
+/* Camera styles */
+.capture-options {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.option-button {
+    flex: 1;
+    text-align: center;
+    padding: 12px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    display: inline-block;
+    font-weight: 500;
+}
+
+.option-button:hover {
+    background-color: #0069d9;
+}
+
+.camera-container {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+#cameraPreview {
+    width: 100%;
+    max-height: 300px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+#capturePictureButton {
+    background-color: #28a745;
+    margin-right: 10px;
+}
+
+#cancelCameraButton {
+    background-color: #dc3545;
+}
+
+#capturePictureButton:hover {
+    background-color: #218838;
+}
+
+#cancelCameraButton:hover {
+    background-color: #c82333;
+}
+
+/* Identification Result Styles */
+.identification-success, .identification-error {
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 15px;
+}
+
+.identification-success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.identification-error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.identification-success h3, .identification-error h3 {
+    margin-top: 0;
+    color: inherit;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 600;
+}
+
+.care-tips {
+    margin-top: 10px;
+}
+
+.care-tips ul {
+    padding-left: 20px;
+}
+
+.care-tips li {
+    margin-bottom: 5px;
+}
+
+p.error {
+    color: #721c24;
+    font-weight: bold;
+}
+
+/* Add stylized elements */
+.species-name {
+    font-style: italic;
+}
+
+.flower-title {
+    font-family: "Cedarville Cursive", cursive;
+    font-weight: 400;
+    color: #28a745;
+    margin-top: 5px;
+    font-size: 1.2rem;
+}
+
+.subtitle {
+    text-align: center;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 300;
+    font-size: 1.1rem;
+    color: #666;
+    margin-top: -20px;
+    margin-bottom: 25px;
+} 
