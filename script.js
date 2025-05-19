@@ -205,14 +205,75 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event Listeners
-    saveApiKeyButton.addEventListener('click', () => {
+    saveApiKeyButton.addEventListener('click', async () => {
         shapesApiKey = apiKeyInput.value.trim();
-        if (shapesApiKey) {
-            localStorage.setItem('shapesApiKey', shapesApiKey);
-            alert('API Key saved!');
-            settingsModal.style.display = 'none';
-        } else {
+        
+        // Validate API key format (basic check)
+        if (!shapesApiKey) {
             alert('Please enter a valid API Key.');
+            return;
+        }
+        
+        // Show saving indicator
+        saveApiKeyButton.innerText = 'Saving...';
+        saveApiKeyButton.disabled = true;
+        
+        // Test the API key with a simple ping request if possible
+        try {
+            // Try to validate the key with a small test request
+            // This is a lightweight message that just tests authentication
+            const testPayload = {
+                model: FLORA_MODEL_ID,
+                messages: [
+                    {
+                        role: "system",
+                        content: "Test message"
+                    },
+                    {
+                        role: "user",
+                        content: "Hello"
+                    }
+                ],
+                max_tokens: 1  // Request minimal tokens to save quota
+            };
+            
+            const response = await fetch(`${SHAPES_API_BASE_URL}/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${shapesApiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(testPayload)
+            });
+            
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Invalid API key. Please check and try again.');
+                } else {
+                    // If there's another error but the key format is valid, we'll still save it
+                    console.warn('API responded with an error, but we\'ll save the key anyway:', response.status);
+                }
+            }
+            
+            // Save the key to local storage
+            localStorage.setItem('shapesApiKey', shapesApiKey);
+            alert('API Key verified and saved successfully!');
+            settingsModal.style.display = 'none';
+            
+        } catch (error) {
+            console.error('Error validating API key:', error);
+            if (error.message.includes('Invalid API key')) {
+                alert(error.message);
+            } else {
+                // If it's a network error or other issue, we'll save the key but warn the user
+                localStorage.setItem('shapesApiKey', shapesApiKey);
+                alert('API Key saved, but we couldn\'t verify it. You might encounter issues when using the app.');
+                settingsModal.style.display = 'none';
+            }
+        } finally {
+            // Reset button state
+            saveApiKeyButton.innerText = 'Save Key';
+            saveApiKeyButton.disabled = false;
         }
     });
 
@@ -257,8 +318,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await callShapesApiForIdentification(imageDataUrl);
             const result = displayIdentificationResult(response);
             
-            // Add to collection if identification was successful
-            if (result) {
+            // Add to collection only if identification was successful and it is a flower
+            if (result && result.is_flower === true) {
                 const flowerData = {
                     imageDataUrl: imageDataUrl,
                     name: result.name || 'Unknown flower',
@@ -282,7 +343,29 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Error identifying flower:', error);
-            identificationResult.innerHTML = `<p class="error">Error: Unable to identify flower. Please try again.</p>`;
+            
+            let errorMessage = 'Unable to identify flower. Please try again.';
+            let errorClass = 'identification-error';
+            
+            // Add more specific error messages based on the error
+            if (error.message.includes('API Key Invalid')) {
+                errorMessage = 'Invalid API Key: Please check your API key in settings.';
+                // Show settings modal after a short delay
+                setTimeout(() => {
+                    settingsModal.style.display = 'block';
+                }, 1000);
+            } else if (error.message.includes('Network Error')) {
+                errorMessage = 'Network Error: Please check your internet connection and try again.';
+            } else if (error.message.includes('Rate Limit Exceeded')) {
+                errorMessage = 'Rate Limit Exceeded: Too many requests. Please wait a minute and try again.';
+            }
+            
+            identificationResult.innerHTML = `
+                <div class="${errorClass}">
+                    <h3>✗ Identification Failed</h3>
+                    <p>${errorMessage}</p>
+                </div>
+            `;
         }
     });
 
@@ -304,7 +387,23 @@ document.addEventListener('DOMContentLoaded', () => {
             appendMessage(response.choices[0].message.content, 'flora');
         } catch (error) {
             console.error('Error sending message:', error);
-            appendMessage(`Error: ${error.message}`, 'flora');
+            
+            let errorMessage = 'Sorry, I encountered an error processing your message.';
+            
+            // Add more specific error messages based on the error
+            if (error.message.includes('API Key Invalid')) {
+                errorMessage = 'Error: Invalid API Key. Please check your API key in settings.';
+                // Show settings modal after a short delay
+                setTimeout(() => {
+                    settingsModal.style.display = 'block';
+                }, 1000);
+            } else if (error.message.includes('Network Error')) {
+                errorMessage = 'Error: Network connection issue. Please check your internet connection.';
+            } else if (error.message.includes('Rate Limit Exceeded')) {
+                errorMessage = 'Error: Rate limit exceeded. Please wait a minute before sending another message.';
+            }
+            
+            appendMessage(errorMessage, 'flora');
         }
     });
 
@@ -317,7 +416,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function appendMessage(text, sender) {
         const messageElement = document.createElement('p');
         messageElement.textContent = text;
+        
+        // Check if this is an error message
+        const isError = text.toLowerCase().includes('error:');
+        
+        // Apply appropriate classes
         messageElement.classList.add(sender === 'user' ? 'user-message' : 'flora-message');
+        
+        if (isError && sender === 'flora') {
+            messageElement.classList.add('error-message');
+        }
+        
         chatBox.appendChild(messageElement);
         chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
     }
@@ -334,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     content: [
                         {
                             type: "text",
-                            text: "Analyze this image of a flower. Please identify the flower species, common name, and provide brief care instructions including light requirements, watering needs, and soil preferences. Return your analysis as a valid JSON object with the following properties: 'name' (common name), 'species' (scientific name), 'care' (care instructions), 'light', 'water', and 'soil' preferences."
+                            text: "Analyze this image and determine if it contains a flower. If it does, please identify the flower species, common name, and provide brief care instructions. Return your analysis as a valid JSON object with the following format:\n\n1. For successful identification (IS a flower):\n{\"is_flower\": true, \"name\": \"Rose\", \"species\": \"Rosa hybrid\", \"care\": \"Roses need regular pruning and fertilizing for best blooms.\", \"light\": \"Full sun\", \"water\": \"Regular watering, keeping soil moist but not soggy\", \"soil\": \"Well-draining, rich soil with pH 6.0-6.5\"}\n\n2. For images that are NOT flowers:\n{\"is_flower\": false, \"reason\": \"This appears to be a tree/vegetable/household object/etc.\"}\n\n3. For unclear images:\n{\"is_flower\": null, \"reason\": \"The image is too blurry/dark/low quality to make a determination.\"}\n\nBe accurate in your assessment and provide detailed information for confirmed flowers."
                         },
                         {
                             type: "image_url",
@@ -347,21 +456,45 @@ document.addEventListener('DOMContentLoaded', () => {
             ]
         };
 
-        const response = await fetch(`${SHAPES_API_BASE_URL}/chat/completions`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${shapesApiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
+        try {
+            console.log('Sending identification request with payload:', JSON.stringify(payload, null, 2));
+            
+            const response = await fetch(`${SHAPES_API_BASE_URL}/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${shapesApiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error?.message || 'API request failed');
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('API Error Response:', errorData);
+                const errorMessage = errorData.error?.message || 'API request failed';
+                
+                // Handle specific error cases
+                if (response.status === 401) {
+                    throw new Error('API Key Invalid: Please check your API key and try again.');
+                } else if (response.status === 403) {
+                    throw new Error('API Access Denied: Your API key doesn\'t have permission to use this model.');
+                } else if (response.status === 429) {
+                    throw new Error('Rate Limit Exceeded: Please try again later.');
+                } else {
+                    throw new Error(`API Error (${response.status}): ${errorMessage}`);
+                }
+            }
+
+            const responseData = await response.json();
+            console.log('Identification API Response:', JSON.stringify(responseData, null, 2));
+            return responseData;
+        } catch (error) {
+            console.error('API Call Error:', error);
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                throw new Error('Network Error: Please check your internet connection.');
+            }
+            throw error;
         }
-
-        return await response.json();
     }
 
     async function callShapesApiForChat(userMessage) {
@@ -379,21 +512,45 @@ document.addEventListener('DOMContentLoaded', () => {
             ]
         };
 
-        const response = await fetch(`${SHAPES_API_BASE_URL}/chat/completions`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${shapesApiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
+        try {
+            console.log('Sending chat request with payload:', JSON.stringify(payload, null, 2));
+            
+            const response = await fetch(`${SHAPES_API_BASE_URL}/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${shapesApiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error?.message || 'API request failed');
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('API Error Response:', errorData);
+                const errorMessage = errorData.error?.message || 'API request failed';
+                
+                // Handle specific error cases
+                if (response.status === 401) {
+                    throw new Error('API Key Invalid: Please check your API key and try again.');
+                } else if (response.status === 403) {
+                    throw new Error('API Access Denied: Your API key doesn\'t have permission to use this model.');
+                } else if (response.status === 429) {
+                    throw new Error('Rate Limit Exceeded: Please try again later.');
+                } else {
+                    throw new Error(`API Error (${response.status}): ${errorMessage}`);
+                }
+            }
+
+            const responseData = await response.json();
+            console.log('Chat API Response:', JSON.stringify(responseData, null, 2));
+            return responseData;
+        } catch (error) {
+            console.error('API Call Error:', error);
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                throw new Error('Network Error: Please check your internet connection.');
+            }
+            throw error;
         }
-
-        return await response.json();
     }
 
     function displayIdentificationResult(apiResponse) {
@@ -415,30 +572,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             
-            // Create a simplified result display
-            identificationResult.innerHTML = `
-                <div class="identification-success">
-                    <h3>✓ Flower Identified</h3>
-                    <p><strong class="flower-title">${flowerData.name || 'Unknown Flower'}</strong></p>
-                    <p class="species-name">${flowerData.species || 'Species unknown'}</p>
-                    <div class="care-tips">
-                        <p><strong>Care Tips:</strong> ${flowerData.care || 'Not available'}</p>
-                        <ul>
-                            <li><strong>Light:</strong> ${flowerData.light || 'Not specified'}</li>
-                            <li><strong>Water:</strong> ${flowerData.water || 'Not specified'}</li>
-                            <li><strong>Soil:</strong> ${flowerData.soil || 'Not specified'}</li>
-                        </ul>
+            // Handle different result types based on is_flower property
+            if (flowerData.is_flower === true) {
+                // Successful flower identification
+                identificationResult.innerHTML = `
+                    <div class="identification-success">
+                        <h3>✓ Flower Identified</h3>
+                        <p><strong class="flower-title">${flowerData.name || 'Unknown Flower'}</strong></p>
+                        <p class="species-name">${flowerData.species || 'Species unknown'}</p>
+                        <div class="care-tips">
+                            <p><strong>Care Tips:</strong> ${flowerData.care || 'Not available'}</p>
+                            <ul>
+                                <li><strong>Light:</strong> ${flowerData.light || 'Not specified'}</li>
+                                <li><strong>Water:</strong> ${flowerData.water || 'Not specified'}</li>
+                                <li><strong>Soil:</strong> ${flowerData.soil || 'Not specified'}</li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
-            `;
-            
-            return flowerData;
+                `;
+                return flowerData;
+            } else if (flowerData.is_flower === false) {
+                // Not a flower
+                identificationResult.innerHTML = `
+                    <div class="identification-warning">
+                        <h3>⚠ Not a Flower</h3>
+                        <p>${flowerData.reason || 'This does not appear to be a flower.'}</p>
+                    </div>
+                `;
+                return null;
+            } else {
+                // Unclear image
+                identificationResult.innerHTML = `
+                    <div class="identification-error">
+                        <h3>✗ Unable to Identify</h3>
+                        <p>${flowerData.reason || 'The image quality is insufficient for identification.'}</p>
+                    </div>
+                `;
+                return null;
+            }
         } catch (error) {
             console.error('Error parsing identification result:', error);
             identificationResult.innerHTML = `
                 <div class="identification-error">
                     <h3>✗ Identification Failed</h3>
-                    <p>Unable to identify this flower. Please try a clearer image.</p>
+                    <p>Unable to process this image. Please try again with a different image.</p>
                 </div>
             `;
             return null;
@@ -446,6 +623,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function getFloraCommentOnFlower(flowerDetails) {
+        // Only proceed if this is a confirmed flower
+        if (!flowerDetails || !flowerDetails.is_flower) {
+            return;
+        }
+        
         // Prepare a personalized message about the identified flower
         const message = `I just identified a ${flowerDetails.name || 'flower'}! Can you tell me something interesting about it?`;
         
