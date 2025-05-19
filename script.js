@@ -190,26 +190,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Camera functionality
     takePictureButton.addEventListener('click', async () => {
-        try {
-            // Hide the image preview if it's showing
-            imagePreview.style.display = 'none';
-            
-            // Show the camera container
-            cameraContainer.style.display = 'flex';
-            
-            // Get access to the camera
-            mediaStream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: 'environment' } // Use back camera if available
-            });
-            
-            // Display the camera preview
-            cameraPreview.srcObject = mediaStream;
-            cameraPreview.style.display = 'block';
-            cameraPreview.play();
-        } catch (error) {
-            console.error('Error accessing camera:', error);
-            alert('Error accessing camera: ' + error.message);
-            cameraContainer.style.display = 'none';
+        if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+            try {
+                // Hide the image preview if it's showing
+                imagePreview.style.display = 'none';
+                
+                // Show the camera container
+                cameraContainer.style.display = 'flex';
+                
+                // Get access to the camera
+                mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' } // Use back camera if available
+                });
+                
+                // Display the camera preview
+                cameraPreview.srcObject = mediaStream;
+                cameraPreview.style.display = 'block';
+                cameraPreview.play();
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                // If camera fails, fall back to file input with camera capture
+                flowerImageInput.setAttribute('capture', 'environment');
+                flowerImageInput.click();
+            }
+        } else {
+            // If no camera API, fall back to file input with camera capture
+            flowerImageInput.setAttribute('capture', 'environment');
+            flowerImageInput.click();
         }
     });
 
@@ -331,6 +338,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // File upload functionality
     uploadButton.addEventListener('click', () => {
+        // Remove the capture attribute to allow gallery selection
+        flowerImageInput.removeAttribute('capture');
         flowerImageInput.click();
     });
 
@@ -342,6 +351,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 imagePreview.src = e.target.result;
                 imagePreview.style.display = 'block';
                 removeImageButton.style.display = 'block';
+                // Hide camera container if it's showing
+                cameraContainer.style.display = 'none';
+                if (mediaStream) {
+                    stopCamera();
+                }
             };
             reader.readAsDataURL(file);
         }

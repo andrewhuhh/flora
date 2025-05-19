@@ -31,7 +31,7 @@
                     <div class="capture-options">
                         <button id="takePictureButton" class="option-button"><i class="fas fa-camera"></i></button>
                         <button id="uploadButton" class="option-button"><i class="fas fa-upload"></i></button>
-                        <input type="file" id="flowerImageInput" accept="image/*" style="display:none">
+                        <input type="file" id="flowerImageInput" accept="image/*" capture="environment" style="display:none">
                     </div>
                     <div class="camera-container" style="display:none">
                         <video id="cameraPreview" autoplay playsinline style="display:none"></video>
@@ -74,24 +74,24 @@
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Floating Chat -->
-    <div id="floatingChat" class="floating-chat collapsed">
-        <button id="chatToggleButton" class="chat-toggle-button">
-            <span class="chat-icon">💬</span>
-            <span class="close-icon">×</span>
-        </button>
-        <div class="floating-chat-container">
-            <div class="chat-header">
-                <h3>Chat with Flora</h3>
-            </div>
-            <div id="chatBox" class="chat-box">
-                <!-- Chat messages will appear here -->
-            </div>
-            <div class="chat-input-container">
-                <input type="text" id="chatInput" placeholder="Ask Flora something...">
-                <button id="sendMessageButton">Send</button>
+
+        <!-- Floating Chat -->
+        <div id="floatingChat" class="floating-chat collapsed">
+            <button id="chatToggleButton" class="chat-toggle-button">
+                <span class="chat-icon">💬</span>
+                <span class="close-icon">×</span>
+            </button>
+            <div class="floating-chat-container">
+                <div class="chat-header">
+                    <h3>Chat with Flora</h3>
+                </div>
+                <div id="chatBox" class="chat-box">
+                    <!-- Chat messages will appear here -->
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" id="chatInput" placeholder="Ask Flora something...">
+                    <button id="sendMessageButton">Send</button>
+                </div>
             </div>
         </div>
     </div>

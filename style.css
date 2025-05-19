@@ -603,10 +603,67 @@ button:disabled:hover {
 
 @media (max-width: 480px) {
     .floating-chat-container {
-        width: calc(100vw - 40px);
-        position: fixed;
-        left: 20px;
-        bottom: 80px;
+        width: 100%;
+        position: static;
+        margin: 20px 0;
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+
+    .chat-toggle-button {
+        display: none;
+    }
+
+    .floating-chat {
+        position: static;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        order: 3; /* Place chat after other content */
+    }
+
+    .floating-chat.collapsed {
+        display: block;
+    }
+
+    .floating-chat.collapsed .floating-chat-container {
+        display: block;
+    }
+
+    .floating-chat .chat-box {
+        height: 200px;
+        border-radius: 0;
+    }
+
+    .floating-chat .chat-input-container {
+        border-top: 1px solid #eee;
+        padding: 15px;
+    }
+
+    .floating-chat .chat-header {
+        border-radius: 8px 8px 0 0;
+    }
+
+    .floating-chat-container {
+        border-radius: 8px;
+        margin: 20px 0;
+        width: auto;
+    }
+
+    /* Ensure proper container layout on mobile */
+    .container {
+        display: flex;
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    /* Adjust spacing for mobile */
+    .tabs-container {
+        order: 1;
+    }
+
+    .header-actions {
+        order: 2;
     }
 }
 
