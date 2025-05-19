@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cedarville+Cursive&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,7 +22,6 @@
         <div class="tabs-container">
             <ul class="tabs">
                 <li class="tab-item active" data-tab="identifyTab">Identify Flower</li>
-                <li class="tab-item" data-tab="chatTab">Chat with Flora</li>
                 <li class="tab-item" data-tab="collectionTab">Your Collection</li>
             </ul>
 
@@ -29,14 +29,16 @@
                 <div class="flower-identification-section">
                     <h2>Identify a Flower</h2>
                     <div class="capture-options">
-                        <button id="takePictureButton" class="option-button">Take Picture</button>
-                        <label for="flowerImageInput" class="option-button">Upload Image</label>
+                        <button id="takePictureButton" class="option-button"><i class="fas fa-camera"></i></button>
+                        <button id="uploadButton" class="option-button"><i class="fas fa-upload"></i></button>
                         <input type="file" id="flowerImageInput" accept="image/*" style="display:none">
                     </div>
                     <div class="camera-container" style="display:none">
                         <video id="cameraPreview" autoplay playsinline style="display:none"></video>
-                        <button id="capturePictureButton">Capture</button>
-                        <button id="cancelCameraButton">Cancel</button>
+                        <div style="display: flex; gap: 10px;">
+                            <button id="capturePictureButton"><i class="fas fa-camera"></i></button>
+                            <button id="cancelCameraButton"><i class="fas fa-times"></i></button>
+                        </div>
                     </div>
                     <button id="identifyFlowerButton">Identify Flower</button>
                     <div class="image-preview-container">
@@ -49,22 +51,23 @@
                 </div>
             </div>
 
-            <div id="chatTab" class="tab-content">
-                <div class="chat-section">
-                    <h2>Chat with Flora</h2>
-                    <div id="chatBox" class="chat-box">
-                        <!-- Chat messages will appear here -->
-                    </div>
-                    <div class="chat-input-container">
-                        <input type="text" id="chatInput" placeholder="Ask Flora something...">
-                        <button id="sendMessageButton">Send</button>
-                    </div>
-                </div>
-            </div>
-
             <div id="collectionTab" class="tab-content">
                 <div id="flowerCollectionSection" class="flower-collection-section">
                     <h2>Your Flower Collection</h2>
+                    <div class="collection-controls">
+                        <div class="search-box">
+                            <input type="text" id="collectionSearch" placeholder="Search flowers...">
+                        </div>
+                        <div class="sort-controls">
+                            <label for="sortBy">Sort by:</label>
+                            <select id="sortBy">
+                                <option value="date-desc">Date (Newest First)</option>
+                                <option value="date-asc">Date (Oldest First)</option>
+                                <option value="name-asc">Name (A-Z)</option>
+                                <option value="name-desc">Name (Z-A)</option>
+                            </select>
+                        </div>
+                    </div>
                     <div id="flowerCollectionContainer" class="flower-collection-container">
                         <!-- Collection will be populated by JavaScript -->
                     </div>
@@ -73,6 +76,26 @@
         </div>
     </div>
     
+    <!-- Floating Chat -->
+    <div id="floatingChat" class="floating-chat collapsed">
+        <button id="chatToggleButton" class="chat-toggle-button">
+            <span class="chat-icon">💬</span>
+            <span class="close-icon">×</span>
+        </button>
+        <div class="floating-chat-container">
+            <div class="chat-header">
+                <h3>Chat with Flora</h3>
+            </div>
+            <div id="chatBox" class="chat-box">
+                <!-- Chat messages will appear here -->
+            </div>
+            <div class="chat-input-container">
+                <input type="text" id="chatInput" placeholder="Ask Flora something...">
+                <button id="sendMessageButton">Send</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Settings Modal -->
     <div id="settingsModal" class="modal">
         <div class="modal-content">

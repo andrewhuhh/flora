@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const apiKeyInput = document.getElementById('apiKey');
     const saveApiKeyButton = document.getElementById('saveApiKey');
     const flowerImageInput = document.getElementById('flowerImageInput');
+    const uploadButton = document.getElementById('uploadButton');
     const identifyFlowerButton = document.getElementById('identifyFlowerButton');
     const imagePreview = document.getElementById('imagePreview');
     const removeImageButton = document.getElementById('removeImageButton');
@@ -17,6 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const cameraContainer = document.querySelector('.camera-container');
     const capturePictureButton = document.getElementById('capturePictureButton');
     const cancelCameraButton = document.getElementById('cancelCameraButton');
+    const chatToggleButton = document.getElementById('chatToggleButton');
+    const floatingChat = document.getElementById('floatingChat');
     
     // Camera stream reference
     let mediaStream = null;
@@ -51,6 +54,23 @@ document.addEventListener('DOMContentLoaded', () => {
         apiKeyInput.value = shapesApiKey;
     }
     
+    // Initialize variables for search and sort
+    const collectionSearch = document.getElementById('collectionSearch');
+    const sortBy = document.getElementById('sortBy');
+    let currentSearchTerm = '';
+    let currentSortOption = 'date-desc';
+
+    // Add event listeners for search and sort
+    collectionSearch?.addEventListener('input', (e) => {
+        currentSearchTerm = e.target.value.toLowerCase();
+        displayFlowerCollection();
+    });
+
+    sortBy?.addEventListener('change', (e) => {
+        currentSortOption = e.target.value;
+        displayFlowerCollection();
+    });
+
     // Display flower collection if it exists
     function displayFlowerCollection() {
         const collectionContainer = document.getElementById('flowerCollectionContainer');
@@ -61,7 +81,39 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        flowerCollection.forEach((flower, index) => {
+        // Filter flowers based on search term
+        let filteredCollection = flowerCollection;
+        if (currentSearchTerm) {
+            filteredCollection = flowerCollection.filter(flower => {
+                const searchableText = `${flower.name} ${flower.details.species}`.toLowerCase();
+                return searchableText.includes(currentSearchTerm);
+            });
+        }
+
+        // Sort flowers based on selected option
+        filteredCollection.sort((a, b) => {
+            switch (currentSortOption) {
+                case 'date-desc':
+                    return new Date(b.date) - new Date(a.date);
+                case 'date-asc':
+                    return new Date(a.date) - new Date(b.date);
+                case 'name-asc':
+                    return (a.name || '').localeCompare(b.name || '');
+                case 'name-desc':
+                    return (b.name || '').localeCompare(a.name || '');
+                default:
+                    return 0;
+            }
+        });
+
+        // Show no results message if needed
+        if (filteredCollection.length === 0) {
+            collectionContainer.innerHTML = '<p class="no-results">No flowers match your search.</p>';
+            return;
+        }
+
+        // Display filtered and sorted collection
+        filteredCollection.forEach((flower, index) => {
             const flowerCard = document.createElement('div');
             flowerCard.className = 'flower-card';
             flowerCard.innerHTML = `
@@ -143,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
             imagePreview.style.display = 'none';
             
             // Show the camera container
-            cameraContainer.style.display = 'block';
+            cameraContainer.style.display = 'flex';
             
             // Get access to the camera
             mediaStream = await navigator.mediaDevices.getUserMedia({ 
@@ -277,6 +329,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // File upload functionality
+    uploadButton.addEventListener('click', () => {
+        flowerImageInput.click();
+    });
+
     flowerImageInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -285,16 +342,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 imagePreview.src = e.target.result;
                 imagePreview.style.display = 'block';
                 removeImageButton.style.display = 'block';
-                
-                // Make sure camera is stopped if it was active
-                stopCamera();
-            }
+            };
             reader.readAsDataURL(file);
-            identificationResult.innerHTML = '<p>Ready to identify...</p>';
-        } else {
-            imagePreview.style.display = 'none';
-            removeImageButton.style.display = 'none';
-            imagePreview.src = '#';
         }
     });
 
@@ -623,24 +672,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function getFloraCommentOnFlower(flowerDetails) {
-        // Only proceed if this is a confirmed flower
         if (!flowerDetails || !flowerDetails.is_flower) {
             return;
         }
         
-        // Prepare a personalized message about the identified flower
         const message = `I just identified a ${flowerDetails.name || 'flower'}! Can you tell me something interesting about it?`;
         
         try {
             const response = await callShapesApiForChat(message);
             const comment = response.choices[0].message.content;
             
-            // Switch to the chat tab
-            document.querySelector('.tab-item[data-tab="chatTab"]').click();
-            
-            // Add the messages to the chat
+            // Show the chat and add the messages
+            floatingChat.classList.remove('collapsed');
             appendMessage(message, 'user');
             appendMessage(comment, 'flora');
+            chatBox.scrollTop = chatBox.scrollHeight;
         } catch (error) {
             console.error('Error getting Flora comment:', error);
         }
@@ -662,4 +708,25 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize the collection display
     displayFlowerCollection();
+
+    // Chat toggle functionality
+    chatToggleButton.addEventListener('click', () => {
+        floatingChat.classList.toggle('collapsed');
+        if (!floatingChat.classList.contains('collapsed')) {
+            chatInput.focus();
+        }
+    });
+
+    // Close chat when clicking outside
+    document.addEventListener('click', (event) => {
+        const isClickInsideChat = floatingChat.contains(event.target);
+        if (!isClickInsideChat && !floatingChat.classList.contains('collapsed')) {
+            floatingChat.classList.add('collapsed');
+        }
+    });
+
+    // Prevent chat from closing when clicking inside
+    floatingChat.addEventListener('click', (event) => {
+        event.stopPropagation();
+    });
 }); 
