@@ -261,13 +261,36 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
         
+        // Append modal to body first
         document.body.appendChild(focusedModal);
+        
+        // Prevent body scrolling when modal is open
+        document.body.style.overflow = 'hidden';
+        
+        // Show the modal with animation
         focusedModal.style.display = 'block';
+        // Force a reflow to ensure transition works
+        void focusedModal.offsetWidth;
+        // Add the show class for fade-in effect
+        focusedModal.classList.add('show');
+        // Animate the content up
+        setTimeout(() => {
+            const modalContent = focusedModal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.style.transform = 'translateY(0)';
+            }
+        }, 10);
         
         // Close the modal
         focusedModal.querySelector('.close-modal').addEventListener('click', () => {
-            focusedModal.style.display = 'none';
-            focusedModal.remove();
+            closeModalWithAnimation(focusedModal);
+        });
+        
+        // Close modal when clicking outside too
+        focusedModal.addEventListener('click', (event) => {
+            if (event.target === focusedModal) {
+                closeModalWithAnimation(focusedModal);
+            }
         });
         
         // Handle saving notes
@@ -998,4 +1021,24 @@ document.addEventListener('DOMContentLoaded', () => {
     floatingChat.addEventListener('click', (event) => {
         event.stopPropagation();
     });
+
+    // Helper function to close modal with animation
+    function closeModalWithAnimation(modal) {
+        // Animate content down
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.style.transform = 'translateY(20px)';
+        }
+        
+        // Fade out modal
+        modal.classList.remove('show');
+        
+        // Wait for animation to complete
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.remove();
+            // Restore body scrolling
+            document.body.style.overflow = '';
+        }, 300);
+    }
 }); 

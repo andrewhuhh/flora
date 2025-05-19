@@ -742,14 +742,31 @@ button:disabled:hover {
 }
 
 /* Focused Flower View Styles */
+.flower-focused-modal {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.flower-focused-modal.show {
+    opacity: 1;
+}
+
 .flower-focused-modal .modal-content {
     max-width: 800px;
     padding: 25px;
+    margin: 5% auto;
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
 }
 
 .focused-header {
     text-align: center;
     margin-bottom: 20px;
+    background-color: #fff;
+    padding: 10px 0;
+    z-index: 10;
 }
 
 .focused-content {
@@ -867,6 +884,18 @@ button:disabled:hover {
     .focused-image-container {
         max-width: 100%;
         margin-bottom: 20px;
+    }
+    
+    .focused-details {
+        max-height: none;
+    }
+    
+    .flower-focused-modal .modal-content {
+        margin: 0;
+        max-height: 100vh;
+        height: 100vh;
+        width: 100%;
+        border-radius: 0;
     }
 }
 
