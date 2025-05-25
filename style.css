@@ -98,6 +98,16 @@ button:hover {
     border-radius: 4px;
     min-height: 50px;
     overflow-wrap: break-word;
+    /* Added properties: */
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* Responsive adjustment for result-box on smaller screens */
+@media (max-width: 600px) {
+    .result-box {
+        max-height: 35vh; /* Use viewport height for better responsiveness */
+    }
 }
 
 .chat-box {
