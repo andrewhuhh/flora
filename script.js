@@ -330,6 +330,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const messageElement = document.createElement('p');
             messageElement.textContent = text;
             messageElement.classList.add(sender === 'user' ? 'user-message' : 'flora-message');
+
+            // Add error styling if it's an error message from Flora
+            if (sender === 'flora' && text.toLowerCase().includes('error:')) {
+                messageElement.classList.add('error-message');
+            }
+
             focusedChatBox.appendChild(messageElement);
             focusedChatBox.scrollTop = focusedChatBox.scrollHeight;
         }
@@ -350,6 +356,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             appendFocusedMessage(message, 'user');
             focusedChatInput.value = '';
+
+            focusedSendButton.disabled = true;
+            const typingIndicator = document.createElement('p');
+            typingIndicator.id = 'focusedChatTypingIndicator';
+            typingIndicator.className = 'typing-indicator flora-message';
+            typingIndicator.textContent = 'Flora is typing...';
+            focusedChatBox.appendChild(typingIndicator);
+            focusedChatBox.scrollTop = focusedChatBox.scrollHeight;
             
             try {
                 // Make the API call with context about this specific flower
@@ -368,6 +382,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 appendFocusedMessage(errorMessage, 'flora');
+            } finally {
+                focusedSendButton.disabled = false;
+                const indicator = document.getElementById('focusedChatTypingIndicator');
+                if (indicator) {
+                    indicator.remove();
+                }
             }
         });
         
@@ -463,6 +483,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     capturePictureButton.addEventListener('click', () => {
         if (!mediaStream) return;
+
+        // Disable buttons to prevent multiple captures
+        capturePictureButton.disabled = true;
+        cancelCameraButton.disabled = true;
         
         // Create a canvas to capture the frame
         const canvas = document.createElement('canvas');
@@ -492,6 +516,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Stop the camera and hide the camera container
         stopCamera();
+
+        // Re-enable buttons
+        capturePictureButton.disabled = false;
+        cancelCameraButton.disabled = false;
     });
 
     cancelCameraButton.addEventListener('click', () => {
@@ -605,6 +633,16 @@ document.addEventListener('DOMContentLoaded', () => {
     flowerImageInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (file) {
+            // Show loading preview message
+            if(emptyImageState) {
+                emptyImageState.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Loading preview...</p>';
+                emptyImageState.style.display = 'flex';
+            }
+            imagePreview.style.display = 'none';
+            removeImageButton.style.display = 'none';
+            identifyFlowerButton.style.display = 'none';
+
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 imagePreview.src = e.target.result;
@@ -645,6 +683,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show the result box when identification starts
         identificationResult.style.display = 'block';
         identificationResult.innerHTML = '<p>Identifying, please wait...</p>';
+
+        identifyFlowerButton.disabled = true;
+        identifyFlowerButton.innerText = 'Identifying...';
 
         try {
             const imageDataUrl = imagePreview.src; // Get the data URL from the preview image
@@ -701,6 +742,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p>${errorMessage}</p>
                 </div>
             `;
+        } finally {
+            identifyFlowerButton.disabled = false;
+            identifyFlowerButton.innerText = 'Identify Flower';
         }
     });
 
@@ -716,6 +760,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         appendMessage(message, 'user');
         chatInput.value = '';
+
+        sendMessageButton.disabled = true;
+        const typingIndicator = document.createElement('p');
+        typingIndicator.id = 'mainChatTypingIndicator';
+        typingIndicator.className = 'typing-indicator flora-message'; 
+        typingIndicator.textContent = 'Flora is typing...';
+        chatBox.appendChild(typingIndicator);
+        chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
             const response = await callShapesApiForChat(message);
@@ -739,6 +791,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             appendMessage(errorMessage, 'flora');
+        } finally {
+            sendMessageButton.disabled = false;
+            const indicator = document.getElementById('mainChatTypingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
         }
     });
 
@@ -1006,6 +1064,10 @@ document.addEventListener('DOMContentLoaded', () => {
         floatingChat.classList.toggle('collapsed');
         if (!floatingChat.classList.contains('collapsed')) {
             chatInput.focus();
+            // Check if chatBox is empty and add welcome message
+            if (chatBox.children.length === 0) {
+                appendMessage("Hi! I'm Flora. Ask me about flowers, plant care, or how to use the app! To get started, try identifying a flower or explore your collection.", 'flora');
+            }
         }
     });
 

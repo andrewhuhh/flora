@@ -1111,4 +1111,13 @@ button:disabled:hover {
 .cancel-btn:hover {
     background-color: #c82333;
     transform: scale(1.05);
-} 
+}
+
+/* Typing Indicator for Chat */
+.typing-indicator {
+    color: #999;
+    font-style: italic;
+    padding: 5px 10px; /* Match chat-box p padding if possible */
+    text-align: left; /* Align with flora-message */
+    margin: 5px 0; /* Match chat-box p margin */
+}
