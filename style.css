@@ -665,7 +665,7 @@ button:disabled:hover {
     }
 
     .floating-chat .chat-box {
-        height: 200px;
+        height: 300px; /* Changed from 200px */
         border-radius: 0;
     }
 
@@ -901,11 +901,12 @@ button:disabled:hover {
     }
     
     .flower-focused-modal .modal-content {
-        margin: 0;
-        max-height: 100vh;
-        height: 100vh;
-        width: 100%;
-        border-radius: 0;
+        width: 90vw; /* Changed from 100% */
+        max-height: 85vh; /* Changed from 100vh, ensures it's not always full height */
+        /* height: 100vh; <-- This line is removed */
+        margin: 7.5vh auto; /* Changed from margin: 0; to re-introduce spacing and centering */
+        border-radius: 8px; /* Changed from 0; to restore rounded corners */
+        /* overflow-y: auto; should be inherited and is critical */
     }
 }
 

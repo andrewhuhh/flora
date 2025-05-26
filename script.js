@@ -763,6 +763,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         chatBox.appendChild(messageElement);
+
+        // ---- START DYNAMIC HEIGHT ADJUSTMENT ----
+        if (window.innerWidth <= 480) {
+            const baseMobileHeight = 300; // From CSS @media (max-width: 480px) for .floating-chat .chat-box
+            const maxHeight = window.innerHeight * 0.6; // Max 60% of viewport height
+
+            // Determine the target height
+            let targetHeight = Math.max(baseMobileHeight, chatBox.scrollHeight); // Ensure it's at least base height
+            targetHeight = Math.min(targetHeight, maxHeight); // Cap at max height
+            
+            chatBox.style.height = targetHeight + 'px';
+        }
+        // ---- END DYNAMIC HEIGHT ADJUSTMENT ----
+
         chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
     }
 
